@@ -1,0 +1,94 @@
+﻿@page "/ventas/nuevo"
+@page "/ventas/editar/{ID:int}"
+@rendermode InteractiveServer
+
+@inject NavigationManager _navigator;
+@inject IRepositorioVentas _repositorio;
+
+<h2>@_mensaje Venta</h2>
+
+<EditForm Model="_venta" FormName="frmVenta" OnValidSubmit="Guardar" >
+    <DataAnnotationsValidator />
+
+    <div class="row mb-3">
+        <label for="txtProducto" class="col-2 col-form-label">Producto</label>
+        <div class="col-10">
+            <InputSelect class="form-select" @bind-Value="_venta.ProductoID">
+                <option value="0">Seleccione el producto</option>
+                @foreach (var producto in _productos)
+                {
+                    <option value="@producto.ID">@producto.Nombre</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="()=>_venta.ProductoID" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtCantidad" class="col-2 col-form-label">Cantidad vendida</label>
+        <div class="col-10">
+            <InputNumber id="txtCantidad" class="form-control" @bind-Value="_venta.Cantidad" />
+            <ValidationMessage For="()=>_venta.Cantidad" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtFechaVenta" class="col-2 col-form-label">Fecha vendida</label>
+        <div class="col-10">
+            <InputDate id="txtFechaVenta" class="form-control" @bind-Value="_venta.FechaVenta" />
+            <ValidationMessage For="()=>_venta.FechaVenta" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtPrecioVenta" class="col-2 col-form-label">Precio total</label>
+        <div class="col-10">
+            <InputNumber id="txtPrecioVenta" class="form-control" @bind-Value="_venta.PrecioVenta" />
+            <ValidationMessage For="()=>_venta.PrecioVenta" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+    private string _mensaje = "";
+    private Venta _venta = new Venta();
+    private List<Producto> _productos = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _productos = await _repositorio.GetProductos();
+        if (ID > 0)
+        {
+            _venta = await _repositorio.Get(ID);
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nuevo";
+        }
+    }
+
+    private async void Guardar()
+    {
+        if (ID > 0)
+        {
+            await _repositorio.Update(ID, _venta!);
+        }
+        else
+        {
+            await _repositorio.Add(_venta!);
+        }
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/ventas");
+    }
+}

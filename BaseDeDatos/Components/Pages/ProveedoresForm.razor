@@ -1,0 +1,86 @@
+﻿@page "/proveedores/nuevo"
+@page "/proveedores/editar/{ID:int}"
+@rendermode InteractiveServer
+
+@inject NavigationManager _navigator;
+@inject IRepositorioProveedores _repositorio;
+
+<h2>@_mensaje Proveedor</h2>
+
+<EditForm Model="_proveedor" FormName="frmProveedor" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="row mb-3">
+        <label for="txtNombre" class="col-2 col-form-label">Nombre</label>
+        <div class="col-10">
+            <InputText id="txtNombre" class="form-control" @bind-Value="_proveedor.Nombre" />
+            <ValidationMessage For="()=>_proveedor.Nombre" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtDireccion" class="col-2 col-form-label">Dirección</label>
+        <div class="col-10">
+            <InputText id="txtDireccion" class="form-control" @bind-Value="_proveedor.Direccion" />
+            <ValidationMessage For="()=>_proveedor.Direccion" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtTelefono" class="col-2 col-form-label">Telefono</label>
+        <div class="col-10">
+            <InputText id="txtTelefono" class="form-control" @bind-Value="_proveedor.Telefono" />
+            <ValidationMessage For="()=>_proveedor.Telefono" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <label for="txtCorreo" class="col-2 col-form-label">Correo</label>
+        <div class="col-10">
+            <InputText id="txtCorreo" class="form-control" @bind-Value="_proveedor.Correo" />
+            <ValidationMessage For="()=>_proveedor.Correo" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <button class="btn btn-danger ms-3" @onclick="Cancelar" @onclick:preventDefault>Cancelar</button>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public int ID { get; set; }
+    private string _mensaje = "";
+    private Proveedor _proveedor = new Proveedor();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ID > 0)
+        {
+            _proveedor = await _repositorio.Get(ID);
+            _mensaje = "Modificar";
+        }
+        else
+        {
+            _mensaje = "Nuevo";
+        }
+    }
+
+    private async void Guardar()
+    {
+        if (ID > 0)
+        {
+            await _repositorio.Update(ID, _proveedor!);
+        }
+        else
+        {
+            await _repositorio.Add(_proveedor!);
+        }
+        Cancelar();
+    }
+
+    private void Cancelar()
+    {
+        _navigator.NavigateTo("/proveedores");
+    }
+}
